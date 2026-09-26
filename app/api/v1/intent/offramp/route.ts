@@ -3,6 +3,7 @@ import { withV1 } from '@/lib/api/v1';
 import { IntentSchema, createOfframpIntent } from '@/lib/intent/offramp';
 import { verifyOptionalIntentAttestation } from '@/lib/intent/verify';
 import type { Intent } from '@/lib/intent/hash';
+import { emitWebhookEvent } from '@/lib/webhooks/emit';
 
 export const runtime = 'nodejs';
 
@@ -46,6 +47,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (!result.ok) {
         return ctx.error(result.code.toLowerCase(), result.message, result.status);
       }
+
+      // Field by field, never a spread: the intent carries sender and recipient.
+      // withV1 answers a replay from the cache before this handler runs.
+      emitWebhookEvent('intent.created', {
+        corridorId: result.response.route.corridorId,
+        anchorId: result.response.route.anchorId,
+        quoteId: result.response.quoteId,
+        amount: intent.amount,
+        sourceAsset: intent.sourceAsset,
+        destinationAsset: intent.destinationAsset,
+      });
 
       return { status: 200, body: result.response };
     }
