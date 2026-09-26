@@ -565,7 +565,10 @@ async function coSignChallenge(
   const data = (await res.json()) as Record<string, unknown>;
   const transaction = data['transaction'];
   if (typeof transaction !== 'string' || !transaction) {
-    throw new ChallengeError('Missing "transaction" field in client-domain co-sign response', 'MISSING_FIELD');
+    throw new ChallengeError(
+      'Missing "transaction" field in client-domain co-sign response',
+      'MISSING_FIELD'
+    );
   }
 
   let coSigned: Transaction;
@@ -576,13 +579,24 @@ async function coSignChallenge(
     }
     coSigned = parsed;
   } catch {
-    throw new ChallengeError('Client-domain co-sign response is not a readable Stellar transaction', 'INVALID_XDR');
+    throw new ChallengeError(
+      'Client-domain co-sign response is not a readable Stellar transaction',
+      'INVALID_XDR'
+    );
   }
   if (!sameHash(challenge.parsed.hash(), coSigned.hash())) {
-    throw new ChallengeError('Client-domain co-sign response changed the SEP-10 challenge', 'INVALID_XDR');
+    throw new ChallengeError(
+      'Client-domain co-sign response changed the SEP-10 challenge',
+      'INVALID_XDR'
+    );
   }
 
-  return validateSep10Challenge(transaction, challenge.network_passphrase, expectations, tomlDomain);
+  return validateSep10Challenge(
+    transaction,
+    challenge.network_passphrase,
+    expectations,
+    tomlDomain
+  );
 }
 
 function sameHash(left: Uint8Array, right: Uint8Array): boolean {

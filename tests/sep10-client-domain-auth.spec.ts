@@ -13,7 +13,11 @@ const JWT = `${btoa('{"alg":"HS256"}')}.${btoa(JSON.stringify({ exp: Math.floor(
 
 vi.mock('@stellar/freighter-api', () => ({
   signTransaction: vi.fn(),
-  getNetwork: vi.fn(async () => ({ error: false, network: '', networkPassphrase: Networks.PUBLIC })),
+  getNetwork: vi.fn(async () => ({
+    error: false,
+    network: '',
+    networkPassphrase: Networks.PUBLIC,
+  })),
 }));
 
 function anchor(sep10ClientDomain: boolean): ResolvedAnchor {
@@ -75,17 +79,24 @@ describe('SEP-10 client-domain authentication', () => {
     });
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(response({ transaction: originalChallenge, network_passphrase: Networks.PUBLIC }))
+      .mockResolvedValueOnce(
+        response({ transaction: originalChallenge, network_passphrase: Networks.PUBLIC })
+      )
       .mockResolvedValueOnce(response({ transaction: coSignedXdr }))
       .mockImplementationOnce(async (_url: string, init: RequestInit) => {
         const submitted = JSON.parse(init.body as string) as { transaction: string };
-        const transaction = TransactionBuilder.fromXDR(submitted.transaction, Networks.PUBLIC) as Transaction;
+        const transaction = TransactionBuilder.fromXDR(
+          submitted.transaction,
+          Networks.PUBLIC
+        ) as Transaction;
         expect(transaction.signatures).toHaveLength(3);
         return response({ token: JWT });
       });
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(authenticate(anchor(true), WALLET.publicKey())).resolves.toMatchObject({ jwt: JWT });
+    await expect(authenticate(anchor(true), WALLET.publicKey())).resolves.toMatchObject({
+      jwt: JWT,
+    });
     expect(fetchMock.mock.calls[0]?.[0]).toContain('client_domain=wallet.example');
     expect(fetchMock.mock.calls[1]?.[0]).toBe('/api/sep10/client-domain');
     expect(JSON.parse(fetchMock.mock.calls[1]?.[1]?.body as string)).toEqual({
@@ -99,7 +110,9 @@ describe('SEP-10 client-domain authentication', () => {
     const { signTransaction } = await import('@stellar/freighter-api');
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(response({ transaction: challengeXdr(), network_passphrase: Networks.PUBLIC }))
+      .mockResolvedValueOnce(
+        response({ transaction: challengeXdr(), network_passphrase: Networks.PUBLIC })
+      )
       .mockResolvedValueOnce(response({ transaction: challengeXdr() }));
     vi.stubGlobal('fetch', fetchMock);
 
@@ -111,10 +124,15 @@ describe('SEP-10 client-domain authentication', () => {
 
   it('does not call the co-sign route for unflagged anchors', async () => {
     const { signTransaction } = await import('@stellar/freighter-api');
-    vi.mocked(signTransaction).mockResolvedValue({ signedTxXdr: challengeXdr(), signerAddress: WALLET.publicKey() });
+    vi.mocked(signTransaction).mockResolvedValue({
+      signedTxXdr: challengeXdr(),
+      signerAddress: WALLET.publicKey(),
+    });
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(response({ transaction: challengeXdr(), network_passphrase: Networks.PUBLIC }))
+      .mockResolvedValueOnce(
+        response({ transaction: challengeXdr(), network_passphrase: Networks.PUBLIC })
+      )
       .mockResolvedValueOnce(response({ token: JWT }));
     vi.stubGlobal('fetch', fetchMock);
 
@@ -127,9 +145,12 @@ describe('SEP-10 client-domain authentication', () => {
     await expect(authenticate(anchor(true), WALLET.publicKey())).rejects.toEqual(
       expect.objectContaining({
         name: 'Sep10AuthError',
-        message: 'This anchor requires SEP-10 client_domain, which is not configured on this deployment.',
+        message:
+          'This anchor requires SEP-10 client_domain, which is not configured on this deployment.',
       })
     );
-    await expect(authenticate(anchor(true), WALLET.publicKey())).rejects.toBeInstanceOf(Sep10AuthError);
+    await expect(authenticate(anchor(true), WALLET.publicKey())).rejects.toBeInstanceOf(
+      Sep10AuthError
+    );
   });
 });
