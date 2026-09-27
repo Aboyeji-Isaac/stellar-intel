@@ -9,22 +9,10 @@
  * (see docs/ORACLE_SPEC.md). Defaults match the recorded testnet deployment
  * in .deployments/testnet.json and app/api/publisher/tick/route.ts.
  */
-import {
-  Account,
-  BASE_FEE,
-  Contract,
-  Networks,
-  TransactionBuilder,
-  nativeToScVal,
-  scValToNative,
-  rpc,
-  type xdr,
-} from '@stellar/stellar-sdk';
-
 // Sourced from .deployments/testnet.json rather than hardcoded (#723).
 import { resolveOracleContractId } from './deployment';
 const DEFAULT_RPC_URL = 'https://soroban-testnet.stellar.org';
-const DEFAULT_NETWORK_PASSPHRASE = Networks.TESTNET;
+const DEFAULT_NETWORK_PASSPHRASE = 'Test SDF Network ; September 2015';
 
 // A well-formed but unfunded, never-signed account. simulateTransaction only
 // needs a syntactically valid source account to build the envelope for a
@@ -51,16 +39,19 @@ function resolveConfig(config: OracleReadConfig): Required<OracleReadConfig> {
 
 async function simulateRead(
   method: string,
-  args: xdr.ScVal[],
+  args: unknown[],
   config: OracleReadConfig
 ): Promise<unknown> {
+  const { Account, BASE_FEE, Contract, TransactionBuilder, scValToNative, rpc } =
+    await import('@stellar/stellar-sdk');
   const { contractId, rpcUrl, networkPassphrase } = resolveConfig(config);
   const server = new rpc.Server(rpcUrl, { allowHttp: rpcUrl.startsWith('http://') });
   const contract = new Contract(contractId);
   const account = new Account(SIMULATION_SOURCE, '0');
 
   const tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase })
-    .addOperation(contract.call(method, ...args))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .addOperation(contract.call(method, ...(args as any[])))
     .setTimeout(30)
     .build();
 
@@ -70,6 +61,12 @@ async function simulateRead(
   }
   const retval = sim.result?.retval;
   return retval === undefined ? undefined : scValToNative(retval);
+}
+
+async function toScVal(value: unknown, options?: { type?: 'string' }): Promise<unknown> {
+  const { nativeToScVal } = await import('@stellar/stellar-sdk');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (nativeToScVal as any)(value, options);
 }
 
 export interface CorridorAggregate {
@@ -86,7 +83,7 @@ export async function getCorridorAggregate(
 ): Promise<CorridorAggregate | null> {
   const result = await simulateRead(
     'get_corridor_aggregate',
-    [nativeToScVal(anchorId, { type: 'string' }), nativeToScVal(corridor, { type: 'string' })],
+    [await toScVal(anchorId, { type: 'string' }), await toScVal(corridor, { type: 'string' })],
     config
   );
   if (!Array.isArray(result) || result.length !== 3) return null;
@@ -113,7 +110,7 @@ export async function getScoreForCorridor(
 ): Promise<CorridorScore | null> {
   const result = await simulateRead(
     'get_score_for_corridor',
-    [nativeToScVal(anchorId, { type: 'string' }), nativeToScVal(corridor, { type: 'string' })],
+    [await toScVal(anchorId, { type: 'string' }), await toScVal(corridor, { type: 'string' })],
     config
   );
   if (!Array.isArray(result) || result.length !== 4) return null;
@@ -170,7 +167,7 @@ export async function getScoreForCorridorV2(
   try {
     const result = await simulateRead(
       'get_score_for_corridor_v2',
-      [nativeToScVal(anchorId, { type: 'string' }), nativeToScVal(corridor, { type: 'string' })],
+      [await toScVal(anchorId, { type: 'string' }), await toScVal(corridor, { type: 'string' })],
       config
     );
     if (!Array.isArray(result) || result.length !== 5) return null;
@@ -213,7 +210,7 @@ export async function getCorridorAggregateV2(
   try {
     const result = await simulateRead(
       'get_corridor_aggregate_v2',
-      [nativeToScVal(anchorId, { type: 'string' }), nativeToScVal(corridor, { type: 'string' })],
+      [await toScVal(anchorId, { type: 'string' }), await toScVal(corridor, { type: 'string' })],
       config
     );
     if (!Array.isArray(result) || result.length !== 3) return null;
@@ -248,7 +245,7 @@ export async function getVolumeSavings(
 ): Promise<VolumeSavings | null> {
   const result = await simulateRead(
     'get_volume_savings',
-    [nativeToScVal(corridor, { type: 'string' })],
+    [await toScVal(corridor, { type: 'string' })],
     config
   );
   if (!result || typeof result !== 'object') return null;

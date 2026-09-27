@@ -8,6 +8,7 @@ export * from '@/constants/anchors';
 import { ANCHORS, CORRIDORS } from '@/constants/anchors';
 import anchorHealthData from '@/constants/anchor-health.json';
 import type { Anchor, Corridor, ResolvedAnchor, Sep1TomlData } from '@/types';
+import { resolveToml } from './sep1';
 
 // ─── Anchor health (stale-anchor auto-disable, #495) ───────────────────────────
 
@@ -152,7 +153,6 @@ export async function getResolvedAnchorByDomain(homeDomain: string): Promise<Res
 
 export async function getResolvedAnchorById(id: string): Promise<ResolvedAnchor> {
   const anchor = getAnchorById(id);
-  const { resolveToml } = await import('./sep1');
   // Use serviceDomain if provided, otherwise fall back to homeDomain
   const domainToResolve = anchor.serviceDomain || anchor.homeDomain;
   const result = await resolveToml(domainToResolve);
@@ -211,7 +211,6 @@ export function getAnchorsByCorridorId(corridorId: string): Anchor[] {
  * For each anchor, uses serviceDomain if available, otherwise falls back to homeDomain.
  */
 export async function discoverAnchorsForCorridor(corridorId: string): Promise<ResolvedAnchor[]> {
-  const { resolveToml } = await import('./sep1');
   const corridorAnchors = ANCHORS.filter(
     (anchor) => anchor.corridors.includes(corridorId) && !isAnchorDegraded(anchor.id)
   );
