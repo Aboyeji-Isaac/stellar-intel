@@ -17,6 +17,36 @@ export default function McpPage() {
         </p>
       </div>
 
+      <section id="hosted-endpoint" className="space-y-4">
+        <h2 className="text-xl font-semibold text-primary-text">Hosted endpoint</h2>
+        <p className="text-secondary-text">
+          The deployed app serves the MCP server directly over Streamable HTTP, so a client needs a
+          URL and nothing else — no clone, no npm install, no local process:
+        </p>
+        <CodeBlock language="text" code={`https://stellar-intel.vercel.app/api/mcp`} />
+        <CodeBlock
+          language="json"
+          code={`{
+  "mcpServers": {
+    "stellar-intel": {
+      "type": "http",
+      "url": "https://stellar-intel.vercel.app/api/mcp"
+    }
+  }
+}`}
+        />
+        <p className="text-sm text-secondary-text">
+          The endpoint is stateless: send JSON-RPC over <code>POST</code> with{' '}
+          <code>Accept: application/json, text/event-stream</code>; there is no{' '}
+          <code>Mcp-Session-Id</code> to track. It is built from the same{' '}
+          <code>createServer()</code> in <code>scripts/mcp/server.ts</code> as the stdio dev server,
+          so it serves the four <code>scripts/mcp</code> tools — <code>intel.offramp.quote</code>,{' '}
+          <code>intel.offramp.prepare</code>, <code>intel.execute</code> and{' '}
+          <code>intel.leaderboard</code>. Tools marked <code>packages/mcp</code> only below are not
+          on the hosted endpoint yet. Requests are rate-limited to 60 per minute per IP.
+        </p>
+      </section>
+
       {/* Not-yet-published notice */}
       <section className="rounded-xl border border-amber-500/30 bg-amber-50 p-6 dark:bg-amber-950/20">
         <h2 className="flex items-center gap-2 text-lg font-semibold text-amber-900 dark:text-amber-200">
@@ -32,17 +62,11 @@ export default function McpPage() {
         </h2>
         <p className="mt-2 text-sm text-amber-800 dark:text-amber-300">
           <code className="text-xs">@stellarintel/mcp</code> is not yet on npm — running{' '}
-          <code className="text-xs">npm install @stellarintel/mcp</code> returns 404 today. The
-          server is built, and publication is tracked in{' '}
-          <a
-            href="https://github.com/ezedike-evan/stellar-intel/issues/806"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium underline underline-offset-2"
-          >
-            #806
+          <code className="text-xs">npm install @stellarintel/mcp</code> returns 404 today. Use the{' '}
+          <a href="#hosted-endpoint" className="font-medium underline underline-offset-2">
+            hosted endpoint
           </a>{' '}
-          for status updates. Until it ships, run it from this repository (see{' '}
+          above, or run the server from this repository (see{' '}
           <a href="#installation" className="font-medium underline underline-offset-2">
             Installation
           </a>{' '}
@@ -87,7 +111,7 @@ npm start --workspace=@stellarintel/mcp       # node dist/packages/mcp/src/index
 # Streamable HTTP instead of stdio — binds http://127.0.0.1:3000/mcp
 npx tsx packages/mcp/src/index.ts --transport http --port 3000
 
-# In-repo dev server (off-ramp tools only, stdio only)
+# In-repo dev server (off-ramp tools + intel.leaderboard, stdio only)
 npx tsx scripts/mcp/server.ts`}
         />
         <p className="text-sm text-secondary-text">
@@ -377,6 +401,46 @@ npx tsx scripts/mcp/server.ts`}
             />
           </div>
         </div>
+
+        <div className="rounded-xl border border-border p-5">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-primary-text">
+            <span className="rounded bg-accent-subtle px-2 py-0.5 text-xs font-medium text-accent">
+              TOOL
+            </span>
+            intel.corridors
+          </h3>
+          <p className="mt-2 text-sm text-secondary-text">
+            Lists every corridor Stellar Intel currently surfaces, with its id, display name, source
+            asset, destination fiat currency, country, and the anchors that serve it. Call it before
+            any tool that takes a corridor id rather than guessing one. Flag-gated corridors that
+            the UI hides are omitted. Takes no input. Available from the <code>packages/mcp</code>{' '}
+            server only.
+          </p>
+
+          <div className="mt-4">
+            <h4 className="mb-2 text-sm font-medium text-primary-text">Output (abridged)</h4>
+            <CodeBlock
+              language="json"
+              code={`{
+  "count": 5,
+  "corridors": [
+    {
+      "id": "usdc-ngn",
+      "displayName": "Nigeria (NGN)",
+      "from": "USDC",
+      "to": "NGN",
+      "countryCode": "NG",
+      "countryName": "Nigeria",
+      "anchors": [
+        { "id": "cowrie", "name": "Cowrie Exchange", "homeDomain": "cowrie.exchange" }
+      ]
+    },
+    …
+  ]
+}`}
+            />
+          </div>
+        </div>
       </section>
 
       <section className="space-y-4">
@@ -441,16 +505,6 @@ npm run test -- tests/mcp-e2e.spec.ts tests/mcp-http-e2e.spec.ts`}
               className="text-accent hover:underline"
             >
               MCP docs in repository →
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://github.com/ezedike-evan/stellar-intel/issues/806"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-accent hover:underline"
-            >
-              Publication status tracking issue (#806) →
             </a>
           </li>
           <li>
