@@ -1,5 +1,5 @@
 {
-  "_comment": "Live SEP-38 capability capture (#720). Regenerate with scripts/probe-sep38.mts --write-fixture.",
+  "_comment": "Live SEP-38 capability capture (#720). Regenerate with scripts/probe-sep38.mts --write-fixture. perahub was added on 2026-09-29 (#1303) by probing its own TOML directly; the remaining entries date from the 2026-08-04 sweep recorded in capturedAt.",
   "capturedAt": "2026-08-04T17:54:57.652Z",
   "question": "Can any registered anchor serve a SEP-38 firm quote for USDC->NGN?",
   "answer": "No. No anchor on the usdc-ngn corridor declares ANCHOR_QUOTE_SERVER.",
@@ -39,6 +39,11 @@
         "stellar:BRL:GDVKY2GU2DRXWTBEYJJWSFXIGBZV6AZNBVVSUHEPZI54LIS6BA7DVVSP",
         "iso4217:BRL"
       ]
+    },
+    "perahub": {
+      "homeDomain": "stellar.perahub.com.ph",
+      "tomlHttp": 200,
+      "anchorQuoteServer": null
     }
   }
 }

@@ -12,6 +12,10 @@ const FLAGGED_OFF_CORRIDORS = {
   'usdc-eur': 'Orphaned again by the mykobo delisting; no anchor serves EUR.',
   'usdc-ars': 'Orphaned when anclap was corrected to its own tokens 2026-09-23.',
   'usdc-pen': 'Orphaned when anclap was corrected to its own tokens 2026-09-23.',
+  // perahub (#1303) serves usdc-php over SEP-31 only, and SEP-31 is never routed:
+  // it needs a bilateral sending-anchor agreement. The corridor stays defined so the
+  // lane is in the record, but it must not be treated as covered by registry `corridors`.
+  'usdc-php': 'SEP-31-only (perahub); tracked, not routable',
 } as const satisfies Record<string, string>;
 
 function anchorIdsByCorridor(anchors: readonly Anchor[]): Map<string, string[]> {

@@ -121,6 +121,29 @@ export const ANCHORS: Anchor[] = [
     assetIssuer: USDC_ISSUER,
     seps: ['sep10', 'sep24', 'sep31', 'sep38'],
   },
+  // perahub.com.ph (PETNET, Philippines): a live SEP-31 receiving anchor paying PHP.
+  // Tracked for health and survey coverage, never routed — see the usdc-php corridor
+  // entry below for why. Verified 2026-09-23.
+  //
+  // TOML (https://stellar.perahub.com.ph/.well-known/stellar.toml) advertises exactly
+  // one transfer server: DIRECT_PAYMENT_SERVER = https://stellar.perahub.com.ph/sep31,
+  // alongside WEB_AUTH_ENDPOINT (SEP-10) and a SEP-12 KYC server. No TRANSFER_SERVER
+  // (SEP-6) and no TRANSFER_SERVER_SEP0024 (SEP-24) are present, so there is no deposit
+  // rail on either side.
+  // GET /sep31/info: receive USDC enabled, min 0.1, max 1000, fee 5 + 1%; the transaction
+  // field set includes peso_amount. SEP-10 /auth answers (400 without a challenge token);
+  // SEP-12 returns 403 to an unauthenticated GET. TOML CURRENCIES lists USDC under the
+  // canonical issuer, so the registered assetIssuer is USDC_ISSUER — no look-alike.
+  {
+    id: 'perahub',
+    name: 'PeraHub',
+    homeDomain: 'stellar.perahub.com.ph',
+    corridors: [],
+    sep31Corridors: ['usdc-php'],
+    assetCode: 'USDC',
+    assetIssuer: USDC_ISSUER,
+    seps: ['sep10', 'sep31'],
+  },
 ];
 
 export const KNOWN_ANCHORS = ANCHORS;
@@ -267,6 +290,23 @@ export const CORRIDORS: Corridor[] = [
     to: 'XOF',
     countryCode: 'SN',
     countryName: 'Senegal',
+  },
+  // ─── SEP-31-only corridor ───────────────────────────────────────────────────
+  // usdc-php is served by perahub as a SEP-31 receiving anchor (see ANCHORS above).
+  // It lives in CORRIDORS so the corridor resolves for the record, the onboarding
+  // survey and health probes, but it can never be routed: SEP-31 requires a
+  // bilateral sending-anchor agreement we do not have, and perahub advertises no
+  // SEP-6/SEP-24 rail to quote against. That keeps it out of SERVED_CORRIDOR_IDS
+  // (built from `corridors`, never from `sep31Corridors`) and therefore out of
+  // VISIBLE_CORRIDORS, so no selector or rate path can pick it up.
+  {
+    id: 'usdc-php',
+    from: 'USDC',
+    fromIssuer: USDC_ISSUER,
+    fromPeg: 'USD',
+    to: 'PHP',
+    countryCode: 'PH',
+    countryName: 'Philippines',
   },
 ];
 
