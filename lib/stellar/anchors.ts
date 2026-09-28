@@ -275,6 +275,16 @@ export function isValidCorridorId(id: string): boolean {
 }
 
 /**
+ * Returns the source (sold) asset code for a corridor, e.g. 'USDC' for
+ * 'usdc-ngn' or 'ARS' for 'ars-ars'. The off-ramp page derives the selected
+ * asset from the current corridor with this helper so `?corridor=` stays the
+ * only URL state. Throws for an unknown corridor ID, like `getCorridorById`.
+ */
+export function getCorridorAsset(corridorId: string): string {
+  return getCorridorById(corridorId).from;
+}
+
+/**
  * Validates structural rules for anchor registry fields:
  * - every id in unverifiedCorridors is also in corridors;
  * - sep31Corridors and corridors are disjoint, and every sep31Corridors id exists in CORRIDORS;

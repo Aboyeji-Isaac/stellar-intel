@@ -6,6 +6,7 @@ import {
   ANCHOR_HOME_DOMAINS,
   getAnchorById,
   getAnchorsByCorridorId,
+  getCorridorAsset,
   getCorridorById,
   isValidCorridorId,
   transferCapable,
@@ -137,6 +138,21 @@ describe('getAnchorsByCorridorId', () => {
 
   it('returns an empty array for an unknown corridor', () => {
     expect(getAnchorsByCorridorId('usdc-xyz')).toEqual([]);
+  });
+});
+
+describe('getCorridorAsset', () => {
+  it('returns the source asset for a USDC corridor', () => {
+    expect(getCorridorAsset('usdc-ngn')).toBe('USDC');
+  });
+
+  it('returns the source asset for a non-USDC corridor', () => {
+    expect(getCorridorAsset('ars-ars')).toBe('ARS');
+    expect(getCorridorAsset('brl-brl')).toBe('BRL');
+  });
+
+  it('throws a descriptive error for an unknown id', () => {
+    expect(() => getCorridorAsset('unknown')).toThrow(/Unknown corridor.*"unknown"/);
   });
 });
 

@@ -22,6 +22,8 @@ const SELECTABLE_CORRIDORS = VISIBLE_CORRIDORS.filter(
 interface CorridorSelectorProps {
   value: string;
   onChange: (corridorId: string) => void;
+  /** When set, only corridors whose source asset matches are listed. */
+  assetCode?: string;
 }
 
 /**
@@ -29,7 +31,12 @@ interface CorridorSelectorProps {
  * Defaults to usdc-ngn (Nigeria) as the first option.
  * Excludes corridors served only by issuer-only anchors.
  */
-export function CorridorSelector({ value, onChange }: CorridorSelectorProps) {
+export function CorridorSelector({ value, onChange, assetCode }: CorridorSelectorProps) {
+  const corridors =
+    assetCode === undefined
+      ? SELECTABLE_CORRIDORS
+      : SELECTABLE_CORRIDORS.filter((c) => c.from === assetCode);
+
   return (
     <div>
       <label className="mb-1.5 flex items-center gap-1.5 text-sm font-medium text-secondary-text">
@@ -44,9 +51,9 @@ export function CorridorSelector({ value, onChange }: CorridorSelectorProps) {
         onChange={(e) => onChange(e.target.value)}
         className="w-full rounded-lg border border-control-border bg-bg-subtle px-3 py-2.5 text-sm text-primary-text focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
       >
-        {SELECTABLE_CORRIDORS.map((c) => (
+        {corridors.map((c) => (
           <option key={c.id} value={c.id}>
-            {COUNTRY_FLAGS[c.countryCode] ?? ''} {c.countryName} ({c.to})
+            {COUNTRY_FLAGS[c.countryCode] ?? ''} {c.countryName} ({c.from} → {c.to})
           </option>
         ))}
       </select>
