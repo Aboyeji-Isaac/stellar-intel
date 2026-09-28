@@ -7,7 +7,10 @@ export const PREPARE_TOOL_NAME = 'intel.offramp.prepare';
 
 const inputShape = {
   type: z.literal('offramp').describe('Intent type — must be "offramp"'),
-  sourceAsset: z.string().min(1).describe('Source asset code, e.g. USDC'),
+  sourceAsset: z
+    .string()
+    .min(1)
+    .describe('On-chain source asset code as listed by intel.corridors (e.g. USDC, ARST, NGNT)'),
   destinationAsset: z.string().min(1).describe('Destination fiat code, e.g. NGN'),
   amount: z.string().describe('Decimal amount of the source asset'),
   sender: z.string().describe('Stellar public key of the off-ramping account'),

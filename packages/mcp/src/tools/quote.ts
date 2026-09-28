@@ -6,7 +6,10 @@ import { McpToolError, fromOfframpError, upstreamTimeout } from '../errors.js';
 export const QUOTE_TOOL_NAME = 'intel.offramp.quote';
 
 const inputShape = {
-  from: z.string().min(1).describe('Source asset code, e.g. USDC'),
+  from: z
+    .string()
+    .min(1)
+    .describe('On-chain source asset code as listed by intel.corridors (e.g. USDC, ARST, NGNT)'),
   to: z.string().min(1).describe('Destination fiat currency code, e.g. NGN'),
   amount: z.string().describe('Decimal amount of the source asset to off-ramp'),
 };
