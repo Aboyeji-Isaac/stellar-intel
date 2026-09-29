@@ -101,6 +101,8 @@ export interface AnchorRate {
   quoteId?: string;
   /** Row-level quote lifecycle state. Only meaningful for source === 'sep38'. */
   quoteStatus?: 'firm' | 'expiring' | 'refreshing';
+  /** True when the corridor payout currency has not been confirmed on the anchor's live API. */
+  unverifiedPayout?: boolean;
   /**
    * Composite reputation score for this anchor in the range [0, 1].
    * Derived from fill rate, slippage, and settlement latency.
