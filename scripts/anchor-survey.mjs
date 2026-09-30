@@ -160,9 +160,9 @@ export function tierOf(result) {
   const railRoutable = (rail) =>
     Boolean(
       rail &&
-        rail.ok === true &&
-        ((rail.withdraw && rail.withdraw.length > 0) ||
-          (rail.withdrawExchange && rail.withdrawExchange.length > 0))
+      rail.ok === true &&
+      ((rail.withdraw && rail.withdraw.length > 0) ||
+        (rail.withdrawExchange && rail.withdrawExchange.length > 0))
     );
   if (railRoutable(rails.sep6) || railRoutable(rails.sep24)) return 'routable';
 

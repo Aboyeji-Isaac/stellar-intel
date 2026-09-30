@@ -69,8 +69,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const requested = homeDomain.toLowerCase();
     const anchor = ANCHORS.find(
       (a) =>
-        a.homeDomain.toLowerCase() === requested ||
-        a.serviceDomain?.toLowerCase() === requested
+        a.homeDomain.toLowerCase() === requested || a.serviceDomain?.toLowerCase() === requested
     );
     if (!anchor) {
       logger.warn({ event: 'unregistered_home_domain', homeDomain: requested });
@@ -95,7 +94,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     let tx: Transaction;
     try {
       const parsed = TransactionBuilder.fromXDR(transaction, Networks.PUBLIC);
-      if (!(parsed instanceof Transaction)) return badRequest('challenge is a fee-bump transaction');
+      if (!(parsed instanceof Transaction))
+        return badRequest('challenge is a fee-bump transaction');
       tx = parsed;
     } catch {
       return badRequest('challenge is not a readable Stellar transaction');

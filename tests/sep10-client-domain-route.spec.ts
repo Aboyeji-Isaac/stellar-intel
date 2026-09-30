@@ -1,12 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
-import {
-  Keypair,
-  Networks,
-  Transaction,
-  TransactionBuilder,
-  WebAuth,
-} from '@stellar/stellar-sdk';
+import { Keypair, Networks, Transaction, TransactionBuilder, WebAuth } from '@stellar/stellar-sdk';
 import { buildCustomChallenge, drainPayment } from './fixtures/sep10-challenge';
 
 // resolveToml is the only network dependency; everything else is real crypto so
@@ -47,7 +41,14 @@ function stubToml() {
       ORG_SUPPORT_EMAIL: null,
       ORG_SUPPORT_URL: null,
       CURRENCIES: [],
-      capabilities: { sep10: true, sep24: false, sep38: false, sep12: true, sep6: false, sep31: false },
+      capabilities: {
+        sep10: true,
+        sep24: false,
+        sep38: false,
+        sep12: true,
+        sep6: false,
+        sep31: false,
+      },
       seps: [],
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
