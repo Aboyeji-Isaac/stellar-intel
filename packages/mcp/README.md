@@ -122,11 +122,10 @@ https://stellar-intel.vercel.app/api/mcp
 }
 ```
 
-It serves the four-tool `scripts/mcp` set — `intel.offramp.quote`,
-`intel.offramp.prepare`, `intel.execute` and `intel.leaderboard` — not this
-package's full tool set. See
+It serves the same eight tools, prompts and resources as this package — the
+server is built from one shared implementation in `lib/mcp`. See
 [`docs/MCP.md`](https://github.com/ezedike-evan/stellar-intel/blob/main/docs/MCP.md#hosted-endpoint-nothing-to-install)
-for the per-entry-point tool table.
+for the tool list.
 
 ### From the repository
 
