@@ -59,8 +59,16 @@ afterEach(() => {
 });
 
 describe.each([
-  { name: 'internal /api/intent/offramp', post: internalPOST, url: 'http://localhost/api/intent/offramp' },
-  { name: 'v1 /api/v1/intent/offramp', post: v1POST, url: 'http://localhost/api/v1/intent/offramp' },
+  {
+    name: 'internal /api/intent/offramp',
+    post: internalPOST,
+    url: 'http://localhost/api/intent/offramp',
+  },
+  {
+    name: 'v1 /api/v1/intent/offramp',
+    post: v1POST,
+    url: 'http://localhost/api/v1/intent/offramp',
+  },
 ])('$name — replay protection', ({ post, url }) => {
   it('accepts a signed intent with nonce and deadline', async () => {
     const kp = Keypair.random();

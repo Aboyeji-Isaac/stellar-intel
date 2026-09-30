@@ -13,12 +13,9 @@ export const WEBHOOK_EVENT_KINDS = [
 export const WebhookEventKindSchema = z.enum(WEBHOOK_EVENT_KINDS);
 
 export const CreateSubscriptionSchema = z.object({
-  url: z
-    .string()
-    .url({ message: 'url must be a valid URL' })
-    .refine(isPublicHttpsUrl, {
-      message: 'url must be a public https endpoint',
-    }),
+  url: z.string().url({ message: 'url must be a valid URL' }).refine(isPublicHttpsUrl, {
+    message: 'url must be a public https endpoint',
+  }),
   events: z
     .array(WebhookEventKindSchema)
     .min(1, { message: 'at least one event type is required' }),

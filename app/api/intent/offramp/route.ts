@@ -138,11 +138,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         );
       }
 
-      const replay = await registerIntentReplay({ publicKey: (body as { publicKey: string }).publicKey, nonce, deadline });
+      const replay = await registerIntentReplay({
+        publicKey: (body as { publicKey: string }).publicKey,
+        nonce,
+        deadline,
+      });
       if (!replay.ok) {
         logger.warn({ event: 'intent_replay_rejected', code: replay.code });
-        recordIntentError(replay.code === 'replay_detected' ? 'REPLAY_DETECTED' : 'DEADLINE_EXPIRED');
-        return await respond<ApiError>({ code: replay.code.toUpperCase(), message: replay.message }, replay.status);
+        recordIntentError(
+          replay.code === 'replay_detected' ? 'REPLAY_DETECTED' : 'DEADLINE_EXPIRED'
+        );
+        return await respond<ApiError>(
+          { code: replay.code.toUpperCase(), message: replay.message },
+          replay.status
+        );
       }
     }
 
