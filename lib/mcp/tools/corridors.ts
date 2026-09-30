@@ -14,9 +14,11 @@ const CorridorAnchorSchema = z.object({
 
 const CorridorSummarySchema = z.object({
   id: z.string(),
-  /** Matches the CorridorSelector option label, e.g. "Nigeria (NGN)". */
+  /** Formatted label, e.g. "Nigeria (USDC → NGN)". */
   displayName: z.string(),
   from: z.string(),
+  fromIssuer: z.string().nullable(),
+  fromPeg: z.string(),
   to: z.string(),
   countryCode: z.string(),
   countryName: z.string(),
@@ -42,8 +44,10 @@ export type CorridorsOutput = z.infer<typeof CorridorsOutputSchema>;
 export function listCorridors(): CorridorSummary[] {
   return VISIBLE_CORRIDORS.map((corridor) => ({
     id: corridor.id,
-    displayName: `${corridor.countryName} (${corridor.to})`,
+    displayName: `${corridor.countryName} (${corridor.from} → ${corridor.to})`,
     from: corridor.from,
+    fromIssuer: corridor.fromIssuer,
+    fromPeg: corridor.fromPeg,
     to: corridor.to,
     countryCode: corridor.countryCode,
     countryName: corridor.countryName,
