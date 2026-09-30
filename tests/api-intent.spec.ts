@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { TransactionBuilder } from '@stellar/stellar-sdk';
 import type { Transaction } from '@stellar/stellar-sdk';
@@ -8,6 +8,7 @@ import { clearIdempotencyStore } from '@/lib/api/idempotency';
 import { NETWORK_PASSPHRASE, USDC_ISSUER } from '@/lib/config';
 import type { OfframpIntentResponse } from '@/app/api/intent/offramp/route';
 import type { ApiError } from '@/types';
+import { _setWebhookEmitter } from '@/lib/webhooks/emit';
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -392,5 +393,68 @@ describe('POST /api/intent/offramp — payment asset follows the corridor', () =
     expect(asset.getCode()).toBe('BRL');
     expect(asset.getIssuer()).toBe(NTOKENS_BRL_ISSUER);
     expect(asset.getIssuer()).not.toBe(USDC_ISSUER);
+  });
+});
+
+// ─── intent.created webhook (#1340) ──────────────────────────────────────────
+
+describe('POST /api/intent/offramp — intent.created webhook', () => {
+  let emitted: Array<{ kind: string; payload: Record<string, unknown> }>;
+
+  beforeEach(() => {
+    emitted = [];
+    _setWebhookEmitter((kind, payload) => emitted.push({ kind, payload }));
+  });
+
+  afterEach(() => {
+    _setWebhookEmitter(null);
+  });
+
+  it('emits exactly one intent.created on success, without sender, recipient or unsignedTx', async () => {
+    const res = await POST(makeRequest(VALID_INTENT));
+    expect(res.status).toBe(200);
+    const data = (await res.json()) as OfframpIntentResponse;
+
+    expect(emitted).toEqual([
+      {
+        kind: 'intent.created',
+        payload: {
+          corridorId: data.route.corridorId,
+          anchorId: data.route.anchorId,
+          quoteId: data.quoteId,
+          amount: '100',
+          sourceAsset: 'USDC',
+          destinationAsset: 'NGN',
+        },
+      },
+    ]);
+    expect(emitted[0]?.payload).not.toHaveProperty('recipient');
+    expect(emitted[0]?.payload).not.toHaveProperty('sender');
+    expect(emitted[0]?.payload).not.toHaveProperty('unsignedTx');
+  });
+
+  it('emits nothing on a 400', async () => {
+    const res = await POST(makeRequest({ ...VALID_INTENT, amount: '-1' }));
+    expect(res.status).toBe(400);
+    expect(emitted).toEqual([]);
+  });
+
+  it('emits nothing on NO_ROUTE', async () => {
+    vi.stubEnv('ANCHOR_PAYMENT_ACCOUNTS', JSON.stringify({}));
+
+    const res = await POST(makeRequest(VALID_INTENT));
+    expect(((await res.json()) as ApiError).code).toBe('NO_ROUTE');
+    expect(emitted).toEqual([]);
+  });
+
+  it('emits nothing on an idempotent replay', async () => {
+    const headers = { 'Idempotency-Key': 'webhook-key-1', 'x-forwarded-for': '203.0.113.60' };
+
+    expect((await POST(makeRequest(VALID_INTENT, headers))).status).toBe(200);
+    expect(emitted).toHaveLength(1);
+
+    const replay = await POST(makeRequest(VALID_INTENT, headers));
+    expect(replay.headers.get('Idempotency-Replayed')).toBe('true');
+    expect(emitted).toHaveLength(1);
   });
 });

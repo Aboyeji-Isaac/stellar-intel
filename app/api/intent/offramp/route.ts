@@ -14,6 +14,7 @@ import { IntentSchema, createOfframpIntent } from '@/lib/intent/offramp';
 import { verifyOptionalIntentAttestation } from '@/lib/intent/verify';
 import { registerIntentReplay } from '@/lib/intent/replay';
 import type { Intent } from '@/lib/intent/hash';
+import { emitWebhookEvent } from '@/lib/webhooks/emit';
 import type { ApiError } from '@/types';
 
 // Response types now live with the shared core; re-exported for existing importers.
@@ -174,6 +175,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       quoteId: result.response.quoteId,
     });
     recordIntentSuccess();
+    // Field by field, never a spread: the intent carries sender and recipient.
+    // A replay returns from the cache above and never reaches this line.
+    emitWebhookEvent('intent.created', {
+      corridorId: result.response.route.corridorId,
+      anchorId: result.response.route.anchorId,
+      quoteId: result.response.quoteId,
+      amount: intent.amount,
+      sourceAsset: intent.sourceAsset,
+      destinationAsset: intent.destinationAsset,
+    });
     return await respond<OfframpIntentResponse>(result.response, 200);
   });
 }
