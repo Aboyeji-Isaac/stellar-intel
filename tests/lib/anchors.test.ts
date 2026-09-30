@@ -162,7 +162,7 @@ describe('getDepositCapableAnchors', () => {
     const ids = depositCapable.map((a) => a.id);
     expect(ids).toContain('moneygram');
     expect(ids).toContain('cowrie');
-    expect(ids).toContain('ngnc');
+    expect(ids).not.toContain('ngnc'); // ngnc now serves ngnc-ngn, not usdc-ngn (#1275)
   });
 
   it('returns an empty array for an unknown corridor', () => {

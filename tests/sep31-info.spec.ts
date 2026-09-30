@@ -61,9 +61,7 @@ describe('getSep31Info', () => {
   it('rejects a non-https direct payment server before fetching', async () => {
     const fetchFn = mockFetch(fixture);
 
-    await expect(getSep31Info('http://anchor.example.com/sep31')).rejects.toThrow(
-      /must use https/
-    );
+    await expect(getSep31Info('http://anchor.example.com/sep31')).rejects.toThrow(/must use https/);
     expect(fetchFn).not.toHaveBeenCalled();
   });
 

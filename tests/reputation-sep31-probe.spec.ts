@@ -17,7 +17,14 @@ function tomlData(over: Partial<Sep1TomlData> = {}): Sep1TomlData {
     ORG_SUPPORT_EMAIL: null,
     ORG_SUPPORT_URL: null,
     CURRENCIES: [{ code: 'USDC', issuer: 'GISSUER' }],
-    capabilities: { sep10: true, sep24: false, sep38: false, sep12: true, sep6: false, sep31: true },
+    capabilities: {
+      sep10: true,
+      sep24: false,
+      sep38: false,
+      sep12: true,
+      sep6: false,
+      sep31: true,
+    },
     seps: ['sep10', 'sep31'],
     ...over,
   };
@@ -39,12 +46,17 @@ function testAnchor(over: Partial<Anchor> = {}): Anchor {
 const tomlSep31 = async (): Promise<TomlResult> => ({ ok: true, data: tomlData() });
 const tomlNoSep31 = async (): Promise<TomlResult> => ({
   ok: true,
-  data: tomlData({ DIRECT_PAYMENT_SERVER: null, capabilities: { ...tomlData().capabilities, sep31: false } }),
+  data: tomlData({
+    DIRECT_PAYMENT_SERVER: null,
+    capabilities: { ...tomlData().capabilities, sep31: false },
+  }),
 });
 const tomlUnreachable = async (): Promise<TomlResult> => ({ ok: false, error: 'HTTP 503' });
 
 const goodInfo: Sep31Info = {
-  receive: { USDC: { enabled: true, min_amount: 0.1, max_amount: 1000, fee_fixed: 5, fee_percent: 1 } },
+  receive: {
+    USDC: { enabled: true, min_amount: 0.1, max_amount: 1000, fee_fixed: 5, fee_percent: 1 },
+  },
 };
 
 describe('SEP-31 info probe', () => {
