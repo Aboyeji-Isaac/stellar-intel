@@ -331,15 +331,15 @@ describe('solicitAnchorQuotes — concurrency and deadline', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    vi.spyOn(anchorsModule, 'getAnchorsByCorridorId').mockReturnValue([MOCK_ANCHORS_3[0]]);
+    vi.spyOn(anchorsModule, 'getAnchorsByCorridorId').mockReturnValue([MOCK_ANCHORS_3[0]!]);
 
     const resultPromise = solicitAnchorQuotes('100', 'usdc-ngn');
     await vi.runAllTimersAsync();
     await resultPromise;
 
-    const urls = fetchMock.mock.calls.map(call => call[0] as string);
-    const feeUrl = urls.find(u => u.includes('/fee'));
-    
+    const urls = fetchMock.mock.calls.map((call) => call[0] as string);
+    const feeUrl = urls.find((u) => u.includes('/fee'));
+
     expect(feeUrl).toContain('asset_code=CORRIDOR_ASSET');
     expect(feeUrl).toContain('asset_issuer=CORRIDOR_ISSUER');
   });

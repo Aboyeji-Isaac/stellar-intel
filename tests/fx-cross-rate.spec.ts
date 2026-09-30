@@ -58,11 +58,11 @@ describe('getFxRate cross-currency reference FX helper', () => {
 
   it('throws an informative error when a currency is missing or unquoted', async () => {
     await expect(getFxRate('EUR', 'UNKNOWN')).rejects.toThrow(
-      'No reference FX rate available for EUR→UNKNOWN',
+      'No reference FX rate available for EUR→UNKNOWN'
     );
 
     await expect(getFxRate('UNKNOWN', 'NGN')).rejects.toThrow(
-      'No reference FX rate available for UNKNOWN→NGN',
+      'No reference FX rate available for UNKNOWN→NGN'
     );
   });
 
@@ -71,7 +71,7 @@ describe('getFxRate cross-currency reference FX helper', () => {
     expect(rate).toBe(1600);
 
     await expect(getUsdFxRate('MISSING')).rejects.toThrow(
-      'No reference FX rate available for USD→MISSING',
+      'No reference FX rate available for USD→MISSING'
     );
   });
 });
