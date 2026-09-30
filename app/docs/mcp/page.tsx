@@ -17,6 +17,34 @@ export default function McpPage() {
         </p>
       </div>
 
+      <section id="hosted-endpoint" className="space-y-4">
+        <h2 className="text-xl font-semibold text-primary-text">Hosted endpoint</h2>
+        <p className="text-secondary-text">
+          The deployed app serves the MCP server directly over Streamable HTTP, so a client needs a
+          URL and nothing else — no clone, no npm install, no local process:
+        </p>
+        <CodeBlock language="text" code={`https://stellar-intel.vercel.app/api/mcp`} />
+        <CodeBlock
+          language="json"
+          code={`{
+  "mcpServers": {
+    "stellar-intel": {
+      "type": "http",
+      "url": "https://stellar-intel.vercel.app/api/mcp"
+    }
+  }
+}`}
+        />
+        <p className="text-sm text-secondary-text">
+          The endpoint is stateless: send JSON-RPC over <code>POST</code> with{' '}
+          <code>Accept: application/json, text/event-stream</code>; there is no{' '}
+          <code>Mcp-Session-Id</code> to track. It is built from the same{' '}
+          <code>createServer()</code> in <code>lib/mcp/server.ts</code> as the package and the stdio
+          dev server, so it serves the same eight tools, prompts and resources as the package.
+          Requests are rate-limited to 60 per minute per IP.
+        </p>
+      </section>
+
       {/* Not-yet-published notice */}
       <section className="rounded-xl border border-amber-500/30 bg-amber-50 p-6 dark:bg-amber-950/20">
         <h2 className="flex items-center gap-2 text-lg font-semibold text-amber-900 dark:text-amber-200">
@@ -32,17 +60,11 @@ export default function McpPage() {
         </h2>
         <p className="mt-2 text-sm text-amber-800 dark:text-amber-300">
           <code className="text-xs">@stellarintel/mcp</code> is not yet on npm — running{' '}
-          <code className="text-xs">npm install @stellarintel/mcp</code> returns 404 today. The
-          server is built, and publication is tracked in{' '}
-          <a
-            href="https://github.com/ezedike-evan/stellar-intel/issues/806"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium underline underline-offset-2"
-          >
-            #806
+          <code className="text-xs">npm install @stellarintel/mcp</code> returns 404 today. Use the{' '}
+          <a href="#hosted-endpoint" className="font-medium underline underline-offset-2">
+            hosted endpoint
           </a>{' '}
-          for status updates. Until it ships, run it from this repository (see{' '}
+          above, or run the server from this repository (see{' '}
           <a href="#installation" className="font-medium underline underline-offset-2">
             Installation
           </a>{' '}
@@ -385,8 +407,9 @@ npx tsx scripts/mcp/server.ts`}
           </h3>
           <p className="mt-2 text-sm text-secondary-text">
             Lists every corridor Stellar Intel currently surfaces, with its id, display name, source
-            asset, destination fiat currency, country, and the anchors that serve it. Call this
-            before any tool that takes a corridor id rather than guessing one.
+            asset, destination fiat currency, country, and the anchors that serve it. Call it before
+            any tool that takes a corridor id rather than guessing one. Flag-gated corridors that
+            the UI hides are omitted. Takes no input.
           </p>
 
           <div className="mt-4">
@@ -398,8 +421,10 @@ npx tsx scripts/mcp/server.ts`}
   "corridors": [
     {
       "id": "usdc-ngn",
-      "displayName": "Nigeria (NGN)",
+      "displayName": "Nigeria (USDC → NGN)",
       "from": "USDC",
+      "fromIssuer": "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+      "fromPeg": "USD",
       "to": "NGN",
       "countryCode": "NG",
       "countryName": "Nigeria",
@@ -476,16 +501,6 @@ npm run test -- tests/mcp-e2e.spec.ts tests/mcp-http-e2e.spec.ts`}
               className="text-accent hover:underline"
             >
               MCP docs in repository →
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://github.com/ezedike-evan/stellar-intel/issues/806"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-accent hover:underline"
-            >
-              Publication status tracking issue (#806) →
             </a>
           </li>
           <li>
