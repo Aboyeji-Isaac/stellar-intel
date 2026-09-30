@@ -64,17 +64,19 @@ export const ANCHORS: Anchor[] = [
     assetIssuer: 'GCYE7C77EB5AWAA25R5XMWNI2EDOKTTFTTPZKM2SR5DI4B4WFD52DARS',
     seps: ['sep6', 'sep24'],
   },
-  // ngnc.online: NGN fiat corridor — SEP-24 withdraw enabled.
-  // Verified 2026-06-29. TOML: TRANSFER_SERVER_SEP0024 present. /info: withdraw.USDC.enabled = true.
-  // Serves USDC→NGN corridor for Nigeria.
+  // ngnc.online: NGN fiat corridor — SEP-24 deposit/withdraw enabled for NGNC token.
+  // Verified 2026-09-23. TOML: TRANSFER_SERVER_SEP0024 present.
+  // /info: deposit [NGNC] (min 20,000), withdraw [NGNC] (min 10,000).
+  // Issuer: GASBV6W7GGED66MXEVC7YZHTWWYMSVYEY35USF2HJZBLABLYIFQGXZY6, anchor_asset NGN.
+  // Note: GHSC and KESC are status=pending in TOML and not currently on rail.
   {
     id: 'ngnc',
     name: 'NGNC',
     homeDomain: 'ngnc.online',
-    corridors: ['usdc-ngn'],
-    assetCode: 'USDC',
-    assetIssuer: USDC_ISSUER,
-    seps: ['sep24'],
+    corridors: ['ngnc-ngn'],
+    assetCode: 'NGNC',
+    assetIssuer: 'GASBV6W7GGED66MXEVC7YZHTWWYMSVYEY35USF2HJZBLABLYIFQGXZY6',
+    seps: ['sep10', 'sep24'],
   },
   // mykobo.co: DELISTED 2026-09-06. Its stellar.toml still advertises both
   // TRANSFER_SERVER and TRANSFER_SERVER_SEP0024 on stellar.mykobo.co, and that
@@ -139,6 +141,8 @@ const BRL_ISSUER = 'GDVKY2GU2DRXWTBEYJJWSFXIGBZV6AZNBVVSUHEPZI54LIS6BA7DVVSP';
 const ARS_ISSUER = 'GCYE7C77EB5AWAA25R5XMWNI2EDOKTTFTTPZKM2SR5DI4B4WFD52DARS';
 /** Issuer of anclap's PEN token (see the anclap anchor entry above). */
 const PEN_ISSUER = 'GA4TDPNUCZPTOHB3TKUYMDCRVATXKEADH7ZEYEBWJKQKE2UBFCYNBPEN';
+/** Issuer of NGNC token (see the ngnc anchor entry above). */
+const NGNC_ISSUER = 'GASBV6W7GGED66MXEVC7YZHTWWYMSVYEY35USF2HJZBLABLYIFQGXZY6';
 
 /**
  * Corridor ids follow the convention `<on-chain asset code>-<payout fiat code>`,
@@ -245,6 +249,15 @@ export const CORRIDORS: Corridor[] = [
     countryCode: 'PE',
     countryName: 'Peru',
   },
+  {
+    id: 'ngnc-ngn',
+    from: 'NGNC',
+    fromIssuer: NGNC_ISSUER,
+    fromPeg: 'NGN',
+    to: 'NGN',
+    countryCode: 'NG',
+    countryName: 'Nigeria',
+  },
   // ─── v1.1 target corridors ────────────────────────────────────────────────
   // Scaffolded ahead of anchor onboarding (see .github/ISSUE_TEMPLATE/anchor-onboard.yml).
   // Gated behind the `v11Corridors` flag AND anchor coverage — see V11_CORRIDOR_IDS
@@ -308,6 +321,7 @@ export const TYPICAL_AMOUNTS: Record<string, number[]> = {
   'brl-brl': [100, 250, 500],
   'ars-ars': [50000, 100000, 250000],
   'pen-pen': [100, 300, 500],
+  'ngnc-ngn': [20000, 50000, 100000],
   'usdc-zar': [50, 150, 300],
   'usdc-xof': [50, 100, 200],
 };
