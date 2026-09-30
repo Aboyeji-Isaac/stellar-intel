@@ -232,9 +232,10 @@ Match the existing entries' comment style, which records what was verified and
 when:
 
 ```ts
-// ngnc.online: NGN fiat corridor — SEP-24 withdraw enabled.
-// Verified 2026-06-29. TOML: TRANSFER_SERVER_SEP0024 present. /info: withdraw.USDC.enabled = true.
-// Serves USDC→NGN corridor for Nigeria.
+// ngnc.online: NGN fiat corridor — SEP-24 deposit/withdraw enabled for the NGNC token.
+// Verified 2026-09-23. TOML: TRANSFER_SERVER_SEP0024 present.
+// /info: deposit [NGNC] (min 20,000), withdraw [NGNC] (min 10,000).
+// Serves the ngnc-ngn corridor for Nigeria.
 ```
 
 Surveyed-and-rejected domains get the same treatment as a comment in place of an
