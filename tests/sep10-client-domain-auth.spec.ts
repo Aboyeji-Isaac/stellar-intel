@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Keypair, Networks, Transaction, TransactionBuilder } from '@stellar/stellar-sdk';
 import { authenticate, invalidateSep10Token, Sep10AuthError } from '@/lib/stellar/sep10';
 import type { ResolvedAnchor } from '@/types';
-import { buildValidChallenge, buildValidChallengeWithClientDomain } from './fixtures/sep10-challenge';
+import {
+  buildValidChallenge,
+  buildValidChallengeWithClientDomain,
+} from './fixtures/sep10-challenge';
 
 const HOME_DOMAIN = 'client-domain.example';
 const WEB_AUTH_ENDPOINT = `https://${HOME_DOMAIN}/auth`;
