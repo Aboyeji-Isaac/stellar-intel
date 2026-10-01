@@ -4349,16 +4349,6 @@ and the committed ledger actually say today, and it shows the derivations above:
   `ANCHOR_QUOTE_SERVER`, so the SEP-38 quote probe has nothing to call. Absence
   here means "no quote server", not "slow".
 
-### Known drift: the `note` field's doc path
-
-The `note` string in every export, and the module comments in
-[`lib/reputation/sdfExport.ts`](../lib/reputation/sdfExport.ts) and
-[`app/api/reputation/sdf-export/route.ts`](../app/api/reputation/sdf-export/route.ts),
-point readers at `docs/anchor-directory-contribution.md`. This file is
-`docs/ANCHOR_DIRECTORY_CONTRIBUTION.md`, so that path resolves nowhere — and
-because it ships inside the payload, a recipient of the export follows it too.
-Worth correcting alongside the next change to that module.
-
 ## Known limitation: probe-derived fields
 
 While the probe pipeline runs, uptime and quote-latency fields stay
