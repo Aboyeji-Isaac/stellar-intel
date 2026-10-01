@@ -39,6 +39,7 @@ export const ANCHORS: Anchor[] = [
     assetCode: 'USDC',
     assetIssuer: USDC_ISSUER,
     seps: ['sep10', 'sep24'],
+    sep10ClientDomain: true,
   },
   {
     // SEP-6 programmatic withdraw — rates are indicative, not firm quotes

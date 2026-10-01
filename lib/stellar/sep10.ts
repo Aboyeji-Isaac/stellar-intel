@@ -541,9 +541,15 @@ export async function authenticate(
       ? await resolveAuthenticationAnchor(anchorOrDomain)
       : anchorOrDomain;
 
+  const clientDomain = process.env.NEXT_PUBLIC_SEP10_CLIENT_DOMAIN;
+  if (anchor.sep10ClientDomain && !clientDomain) {
+    throw new Sep10AuthError(
+      'This anchor requires SEP-10 client_domain, which is not configured on this deployment.',
+      0
+    );
+  }
   const cached = getCachedJwt(anchor.homeDomain, publicKey);
   if (cached) return cached;
-
   const webAuthEndpoint = anchor.WEB_AUTH_ENDPOINT;
   if (!webAuthEndpoint || !anchor.capabilities.sep10) {
     throw new Error(`Anchor "${anchor.homeDomain}" does not support SEP-10 authentication.`);
@@ -552,19 +558,86 @@ export async function authenticate(
   // endpoint and key. For anchors resolved through a service domain that
   // differs from the registry's homeDomain, accept either name.
   const tomlDomain = anchor.domain || anchor.homeDomain;
+  const expectations: Sep10ChallengeExpectations = {
+    serverSigningKey: requireSigningKey(tomlDomain, anchor.SIGNING_KEY),
+    homeDomains: [tomlDomain, anchor.homeDomain],
+    webAuthEndpoint,
+    clientAccountId: publicKey,
+    ...(anchor.sep10ClientDomain && clientDomain ? { clientDomain } : {}),
+  };
   const challenge = await fetchSep10Challenge(
     webAuthEndpoint,
     publicKey,
     tomlDomain,
     anchor.SIGNING_KEY,
-    [anchor.homeDomain]
+    [anchor.homeDomain],
+    anchor.sep10ClientDomain ? { clientDomain: clientDomain! } : {}
   );
-  const signedXdr = await signChallenge(challenge);
+  const signableChallenge = anchor.sep10ClientDomain
+    ? await coSignChallenge(challenge, tomlDomain, expectations)
+    : challenge;
+  const signedXdr = await signChallenge(signableChallenge);
   const { token: jwt, expiresAt } = await submitChallenge(webAuthEndpoint, signedXdr);
 
   const auth: Sep10Auth = { jwt, anchorDomain: anchor.homeDomain, publicKey, expiresAt };
   setCachedJwt(auth);
   return auth;
+}
+
+/** Adds this deployment's SEP-10 client-domain signature without changing the challenge. */
+async function coSignChallenge(
+  challenge: Sep10Challenge,
+  tomlDomain: string,
+  expectations: Sep10ChallengeExpectations
+): Promise<Sep10Challenge> {
+  const res = await fetch('/api/sep10/client-domain', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ transaction: challenge.transaction, homeDomain: tomlDomain }),
+  });
+  if (!res.ok) {
+    throw new Sep10AuthError(`SEP-10 client-domain co-sign failed: HTTP ${res.status}`, res.status);
+  }
+
+  const data = (await res.json()) as Record<string, unknown>;
+  const transaction = data['transaction'];
+  if (typeof transaction !== 'string' || !transaction) {
+    throw new ChallengeError(
+      'Missing "transaction" field in client-domain co-sign response',
+      'MISSING_FIELD'
+    );
+  }
+
+  let coSigned: Transaction;
+  try {
+    const parsed = TransactionBuilder.fromXDR(transaction, Networks.PUBLIC);
+    if (!(parsed instanceof Transaction)) {
+      throw new Error('fee-bump transaction');
+    }
+    coSigned = parsed;
+  } catch {
+    throw new ChallengeError(
+      'Client-domain co-sign response is not a readable Stellar transaction',
+      'INVALID_XDR'
+    );
+  }
+  if (!sameHash(challenge.parsed.hash(), coSigned.hash())) {
+    throw new ChallengeError(
+      'Client-domain co-sign response changed the SEP-10 challenge',
+      'INVALID_XDR'
+    );
+  }
+
+  return validateSep10Challenge(
+    transaction,
+    challenge.network_passphrase,
+    expectations,
+    tomlDomain
+  );
+}
+
+function sameHash(left: Uint8Array, right: Uint8Array): boolean {
+  return left.length === right.length && left.every((byte, index) => byte === right[index]);
 }
 
 async function resolveAuthenticationAnchor(domain: string): Promise<ResolvedAnchor> {

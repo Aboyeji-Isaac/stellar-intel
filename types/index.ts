@@ -21,6 +21,8 @@ export interface Anchor {
   serviceDomain?: string;
   /** Known SEP protocol support flags for this anchor. */
   seps?: Array<'sep6' | 'sep10' | 'sep24' | 'sep31' | 'sep38'>;
+  /** Anchor requires SEP-10 client_domain; see docs. */
+  sep10ClientDomain?: boolean;
   /**
    * subset of corridors whose payout currency has not been confirmed on any live /info response;
    * still routable, but flagged to users.
