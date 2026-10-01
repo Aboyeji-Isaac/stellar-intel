@@ -44,6 +44,11 @@
       "homeDomain": "ramp.aps.money",
       "tomlHttp": 200,
       "anchorQuoteServer": null
+    },
+    "bitnovo": {
+      "homeDomain": "stellar.bitnovo.com",
+      "tomlHttp": 200,
+      "anchorQuoteServer": null
     }
   }
 }

@@ -33,6 +33,7 @@ describe('mykobo.co triage (B028) — delisted', () => {
     expect(ANCHORS.find((a) => a.id === 'mykobo')).toBeUndefined();
     expect(ANCHORS.filter((a) => a.corridors.includes('usdc-eur')).map((a) => a.id)).toEqual([
       'aps',
+      'bitnovo',
     ]);
   });
 

@@ -146,6 +146,25 @@ export const ANCHORS: Anchor[] = [
     assetIssuer: USDC_ISSUER,
     seps: ['sep10', 'sep24'],
   },
+  // bitnovo.com: EUR buy/sell provider bringing back usdc-eur, orphaned by the
+  // MyKobo delisting. Verified 2026-09-23. SEP-24 at
+  // https://stellar.bitnovo.com/sep24 (`TRANSFER_SERVER_SEP0024` in
+  // https://stellar.bitnovo.com/.well-known/stellar.toml); /info lists
+  // deposit/withdraw asset pairs [EUR, native, USDC] with `fee.enabled = false`;
+  // SEP-10 /auth is alive. The TOML CURRENCIES list only USDC (canonical issuer)
+  // and XLM — the EUR entry on the rail is not a declared TOML asset, so EUR is
+  // NOT registered as a sold asset here. Payout is not proven end-to-end, so the
+  // corridor stays flagged unverified pending an interactive check.
+  {
+    id: 'bitnovo',
+    name: 'Bitnovo',
+    homeDomain: 'stellar.bitnovo.com',
+    corridors: ['usdc-eur'],
+    unverifiedCorridors: ['usdc-eur'],
+    assetCode: 'USDC',
+    assetIssuer: USDC_ISSUER,
+    seps: ['sep10', 'sep24'],
+  },
 ];
 
 export const KNOWN_ANCHORS = ANCHORS;

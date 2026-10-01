@@ -20,6 +20,7 @@ import ngnc from './ngnc.json';
 import ntokens from './ntokens.json';
 import zeam from './zeam.json';
 import aps from './aps.json';
+import bitnovo from './bitnovo.json';
 
 export interface OnrampDepositCapture {
   _comment: string;
@@ -53,6 +54,7 @@ export const ONRAMP_DEPOSIT_CAPTURES: Record<string, OnrampDepositCapture> = {
   ntokens,
   zeam,
   aps,
+  bitnovo,
 };
 
 /** Anchors whose registered asset can actually be deposited today, per the capture above. */
