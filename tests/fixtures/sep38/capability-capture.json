@@ -49,6 +49,11 @@
       "homeDomain": "stellar.bitnovo.com",
       "tomlHttp": 200,
       "anchorQuoteServer": null
+    },
+    "perahub": {
+      "homeDomain": "stellar.perahub.com.ph",
+      "tomlHttp": 200,
+      "anchorQuoteServer": null
     }
   }
 }
