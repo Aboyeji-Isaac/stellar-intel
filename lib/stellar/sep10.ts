@@ -390,7 +390,6 @@ export async function fetchSep10Challenge(
   homeDomain: string,
   serverSigningKey: string | null | undefined,
   extraHomeDomains: string[] = [],
-  options: { clientDomain?: string } = {}
   options?: { clientDomain?: string }
 ): Promise<Sep10Challenge> {
   // Both pre-flight checks run before any network request, so a toml that
@@ -399,7 +398,6 @@ export async function fetchSep10Challenge(
   const url = requireHttpsWebAuthEndpoint(homeDomain, webAuthEndpoint);
   url.searchParams.set('account', publicKey);
   url.searchParams.set('home_domain', homeDomain);
-  if (options.clientDomain) url.searchParams.set('client_domain', options.clientDomain);
   if (options?.clientDomain !== undefined) {
     url.searchParams.set('client_domain', options.clientDomain);
   }
