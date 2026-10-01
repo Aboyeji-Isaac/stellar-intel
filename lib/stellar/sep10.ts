@@ -563,6 +563,7 @@ export async function authenticate(
     homeDomains: [tomlDomain, anchor.homeDomain],
     webAuthEndpoint,
     clientAccountId: publicKey,
+    ...(anchor.sep10ClientDomain && clientDomain ? { clientDomain } : {}),
   };
   const challenge = await fetchSep10Challenge(
     webAuthEndpoint,

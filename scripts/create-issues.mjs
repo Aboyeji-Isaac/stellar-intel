@@ -46,7 +46,11 @@ if (!CATALOG) {
 const repoArgs = REPO ? ['--repo', REPO] : [];
 
 function gh(args) {
-  return execFileSync('gh', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  return execFileSync('gh', args, {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    shell: process.platform === 'win32',
+  });
 }
 
 function tryGh(args) {

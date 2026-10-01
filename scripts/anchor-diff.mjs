@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Anchor fleet diff — compares a fresh `anchor-survey.mjs --json` run against the
 // committed snapshot (scripts/anchor-survey.snapshot.json) and reports which
 // domains newly became transfer-capable (SEP-6/SEP-24) or dropped out of that

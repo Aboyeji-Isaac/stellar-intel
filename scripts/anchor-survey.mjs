@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Anchor fleet survey — reproducible classification of Stellar anchors by SEP support.
 //
 // Pulls every account tagged `anchor` from the stellar.expert public directory,

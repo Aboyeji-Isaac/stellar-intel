@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { writeFileSync, mkdtempSync, chmodSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -12,16 +12,22 @@ import { delimiter, join } from 'node:path';
  */
 function fakeGhDir(): string {
   const dir = mkdtempSync(join(tmpdir(), 'fake-gh-'));
-  const bin = join(dir, 'gh');
-  writeFileSync(
-    bin,
-    `#!${process.execPath}
+  const scriptCode = `
 const args = process.argv.slice(2);
 const labels = [{ name: 'feature' }, { name: 'module/ui' }];
 process.stdout.write(JSON.stringify(args[0] === 'label' ? labels : []));
-`
-  );
+`;
+  const bin = join(dir, 'gh');
+  writeFileSync(bin, `#!${process.execPath}\n${scriptCode}`);
   chmodSync(bin, 0o755);
+
+  if (process.platform === 'win32') {
+    const jsPath = join(dir, 'gh.js');
+    writeFileSync(jsPath, scriptCode);
+    const cmdPath = join(dir, 'gh.cmd');
+    writeFileSync(cmdPath, `@echo off\n"${process.execPath}" "${jsPath}" %*\n`);
+  }
+
   return dir;
 }
 

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { Keypair, Networks, Transaction, TransactionBuilder } from '@stellar/stellar-sdk';
+import { Keypair, Networks, Transaction, TransactionBuilder, WebAuth } from '@stellar/stellar-sdk';
 import { authenticate, invalidateSep10Token, Sep10AuthError } from '@/lib/stellar/sep10';
 import type { ResolvedAnchor } from '@/types';
 import { buildValidChallenge } from './fixtures/sep10-challenge';
@@ -43,13 +43,18 @@ function anchor(sep10ClientDomain: boolean): ResolvedAnchor {
   };
 }
 
-function challengeXdr(): string {
-  return buildValidChallenge({
-    server: SERVER,
-    clientAccountId: WALLET.publicKey(),
-    homeDomain: HOME_DOMAIN,
-    webAuthDomain: HOME_DOMAIN,
-  });
+function challengeXdr(clientDomain?: string, clientSigningKey?: string): string {
+  return WebAuth.buildChallengeTx(
+    SERVER,
+    WALLET.publicKey(),
+    HOME_DOMAIN,
+    300,
+    Networks.PUBLIC,
+    HOME_DOMAIN,
+    null,
+    clientDomain,
+    clientSigningKey
+  );
 }
 
 function response(body: Record<string, string>, status = 200): Response {
@@ -66,7 +71,7 @@ beforeEach(() => {
 describe('SEP-10 client-domain authentication', () => {
   it('co-signs flagged anchors before submitting the wallet-signed transaction', async () => {
     vi.stubEnv('NEXT_PUBLIC_SEP10_CLIENT_DOMAIN', 'wallet.example');
-    const originalChallenge = challengeXdr();
+    const originalChallenge = challengeXdr('wallet.example', CLIENT_DOMAIN_SIGNER.publicKey());
     const coSigned = TransactionBuilder.fromXDR(originalChallenge, Networks.PUBLIC) as Transaction;
     coSigned.sign(CLIENT_DOMAIN_SIGNER);
     const coSignedXdr = coSigned.toXDR();
@@ -108,12 +113,15 @@ describe('SEP-10 client-domain authentication', () => {
   it('rejects a co-sign response that changes the challenge before calling Freighter', async () => {
     vi.stubEnv('NEXT_PUBLIC_SEP10_CLIENT_DOMAIN', 'wallet.example');
     const { signTransaction } = await import('@stellar/freighter-api');
+    const originalChallenge = challengeXdr('wallet.example', CLIENT_DOMAIN_SIGNER.publicKey());
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
-        response({ transaction: challengeXdr(), network_passphrase: Networks.PUBLIC })
+        response({ transaction: originalChallenge, network_passphrase: Networks.PUBLIC })
       )
-      .mockResolvedValueOnce(response({ transaction: challengeXdr() }));
+      .mockResolvedValueOnce(
+        response({ transaction: challengeXdr('wallet.example', Keypair.random().publicKey()) })
+      );
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(authenticate(anchor(true), WALLET.publicKey())).rejects.toThrow(
