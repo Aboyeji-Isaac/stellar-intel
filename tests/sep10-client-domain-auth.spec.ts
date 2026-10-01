@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Keypair, Networks, Transaction, TransactionBuilder } from '@stellar/stellar-sdk';
 import { authenticate, invalidateSep10Token, Sep10AuthError } from '@/lib/stellar/sep10';
 import type { ResolvedAnchor } from '@/types';
-import { buildValidChallenge } from './fixtures/sep10-challenge';
+import { buildValidChallenge, buildValidChallengeWithClientDomain } from './fixtures/sep10-challenge';
 
 const HOME_DOMAIN = 'client-domain.example';
 const WEB_AUTH_ENDPOINT = `https://${HOME_DOMAIN}/auth`;
@@ -52,6 +52,16 @@ function challengeXdr(): string {
   });
 }
 
+function challengeXdrWithClientDomain(clientDomain: string): string {
+  return buildValidChallengeWithClientDomain({
+    server: SERVER,
+    clientAccountId: WALLET.publicKey(),
+    homeDomain: HOME_DOMAIN,
+    webAuthDomain: HOME_DOMAIN,
+    clientDomain,
+  });
+}
+
 function response(body: Record<string, string>, status = 200): Response {
   return { ok: status >= 200 && status < 300, status, json: async () => body } as Response;
 }
@@ -65,8 +75,9 @@ beforeEach(() => {
 
 describe('SEP-10 client-domain authentication', () => {
   it('co-signs flagged anchors before submitting the wallet-signed transaction', async () => {
-    vi.stubEnv('NEXT_PUBLIC_SEP10_CLIENT_DOMAIN', 'wallet.example');
-    const originalChallenge = challengeXdr();
+    const CLIENT_DOMAIN = 'wallet.example';
+    vi.stubEnv('NEXT_PUBLIC_SEP10_CLIENT_DOMAIN', CLIENT_DOMAIN);
+    const originalChallenge = challengeXdrWithClientDomain(CLIENT_DOMAIN);
     const coSigned = TransactionBuilder.fromXDR(originalChallenge, Networks.PUBLIC) as Transaction;
     coSigned.sign(CLIENT_DOMAIN_SIGNER);
     const coSignedXdr = coSigned.toXDR();
@@ -97,7 +108,7 @@ describe('SEP-10 client-domain authentication', () => {
     await expect(authenticate(anchor(true), WALLET.publicKey())).resolves.toMatchObject({
       jwt: JWT,
     });
-    expect(fetchMock.mock.calls[0]?.[0]).toContain('client_domain=wallet.example');
+    expect(fetchMock.mock.calls[0]?.[0]).toContain(`client_domain=${CLIENT_DOMAIN}`);
     expect(fetchMock.mock.calls[1]?.[0]).toBe('/api/sep10/client-domain');
     expect(JSON.parse(fetchMock.mock.calls[1]?.[1]?.body as string)).toEqual({
       transaction: originalChallenge,
@@ -106,14 +117,18 @@ describe('SEP-10 client-domain authentication', () => {
   });
 
   it('rejects a co-sign response that changes the challenge before calling Freighter', async () => {
-    vi.stubEnv('NEXT_PUBLIC_SEP10_CLIENT_DOMAIN', 'wallet.example');
+    const CLIENT_DOMAIN = 'wallet.example';
+    vi.stubEnv('NEXT_PUBLIC_SEP10_CLIENT_DOMAIN', CLIENT_DOMAIN);
     const { signTransaction } = await import('@stellar/freighter-api');
+    const originalChallenge = challengeXdrWithClientDomain(CLIENT_DOMAIN);
+    // Return a *different* challenge on co-sign to simulate tampering.
+    const differentChallenge = challengeXdrWithClientDomain(CLIENT_DOMAIN);
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
-        response({ transaction: challengeXdr(), network_passphrase: Networks.PUBLIC })
+        response({ transaction: originalChallenge, network_passphrase: Networks.PUBLIC })
       )
-      .mockResolvedValueOnce(response({ transaction: challengeXdr() }));
+      .mockResolvedValueOnce(response({ transaction: differentChallenge }));
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(authenticate(anchor(true), WALLET.publicKey())).rejects.toThrow(
