@@ -131,7 +131,7 @@ Not yet published. Two human steps, in order:
 
 1. **Claim the `@stellarintel` npm scope.** It is unclaimed today — as are
    `@stellarintel/mcp`, PyPI `stellarintel`, and crates.io
-   `stellar-intel-reputation`.
+   `stellar-intel-client` and `stellar-intel-reputation`.
 2. **Configure npm trusted publishing** for this repository, so
    `.github/workflows/publish-npm-sdk.yml` can publish with provenance via OIDC
    rather than a stored `NPM_TOKEN`.
