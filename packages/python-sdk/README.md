@@ -6,8 +6,12 @@ Mirrors the TypeScript SDK (#806) for Python consumers. Generated from the harde
 
 ## Install
 
+> **Not yet published to PyPI.** Install the package from this repository for now.
+
+From `packages/python-sdk`:
+
 ```bash
-pip install stellarintel
+pip install -e .
 ```
 
 ## Quickstart
