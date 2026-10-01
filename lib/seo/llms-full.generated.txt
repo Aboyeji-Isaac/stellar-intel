@@ -3953,18 +3953,18 @@ with `npm run validate:anchors`. For each registered anchor it fetches
   alphabetic TLD. Ports, paths, IP literals, `localhost` and userinfo are
   rejected before the fetch is made;
 - **HTTP 200 within 15 seconds**, following redirects;
-- **`TRANSFER_SERVER_SEP0024`** present if your registry entry's `seps` includes
-  `sep24`; otherwise a SEP-6-only anchor must advertise **`TRANSFER_SERVER`**.
+- a line-anchored **`TRANSFER_SERVER_SEP0024 =`** in the body, but only when your
+  registry entry's `seps` includes `sep24`. `probeDomain` does not check for
+  SEP-24 otherwise, so a SEP-6-only anchor passes on the 200 alone. It must still
+  advertise **`TRANSFER_SERVER`**, which backs its `sep6` claim and is enforced
+  in CI rather than nightly (see the SEP-to-key table in
+  [What we validate](#what-we-validate)).
 
-> **Note on SEP-6 anchors:** Previously, the nightly probe required
-> `TRANSFER_SERVER_SEP0024` unconditionally, which caused SEP-6-only anchors (such
-> as Cowrie) to fail with `missing TRANSFER_SERVER_SEP0024 (SEP-24)` and latch
-> `degraded`. The validator in [`scripts/validate-anchors.mjs`](../scripts/validate-anchors.mjs)
-> now checks whether an anchor's registry entry declares `sep24` in `seps`, requiring
-> `TRANSFER_SERVER_SEP0024` only when `sep24` is registered and expecting
-> `TRANSFER_SERVER` for SEP-6-only anchors. As a result, healthy SEP-6 anchors
-> pass nightly with `ok` status and zero consecutive failures in
-> [`constants/anchor-health.json`](../constants/anchor-health.json).
+> **Earlier behaviour.** Before the validator made the SEP-24 check conditional
+> on `seps`, every anchor had to advertise `TRANSFER_SERVER_SEP0024`, so
+> SEP-6-only anchors such as Cowrie failed nightly with
+> `missing TRANSFER_SERVER_SEP0024 (SEP-24)` and latched `degraded`. That no
+> longer applies.
 
 A `degraded` anchor is **hidden from corridor selectors and the rate engine**
 (`getAnchorsByCorridorId` in [`lib/stellar/anchors.ts`](../lib/stellar/anchors.ts))
@@ -4152,8 +4152,8 @@ SEP-6 anchors are acceptable for onboarding when they advertise a valid
   ([`components/offramp/ExecuteDrawer.tsx`](../components/offramp/ExecuteDrawer.tsx),
   "SEP-6 form flow — coming soon").
 - The nightly probe requires `TRANSFER_SERVER_SEP0024` only when the registry
-  entry's `seps` includes `sep24`, and expects `TRANSFER_SERVER` for SEP-6-only
-  anchors — see [What the probes require](#1-nightly-toml-validator--decides-whether-you-stay-visible).
+  entry's `seps` includes `sep24`, so a SEP-6-only anchor passes it without
+  advertising SEP-24 — see [What the probes require](#1-nightly-toml-validator--decides-whether-you-stay-visible).
 - Anchors supporting both SEP-6 and SEP-24 should be documented in the SEP
   compliance matrix so maintainers can tell the execution path apart. Where both
   are present, the SEP-24 hosted flow is preferred for execution.
