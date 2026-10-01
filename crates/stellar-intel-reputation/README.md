@@ -18,9 +18,12 @@ in the main repository, including the deployed testnet contract id.
 
 ## Install
 
+> **Not yet published to crates.io.** Depend on the crate directly from this repository for now.
+
 ```toml
 [dependencies]
-stellar-intel-reputation = "0.2"
+stellar-intel-reputation = { git = "https://github.com/ezedike-evan/stellar-intel", package = "stellar-intel-reputation" }
+# once published: stellar-intel-reputation = "0.3"
 ```
 
 ## Usage
