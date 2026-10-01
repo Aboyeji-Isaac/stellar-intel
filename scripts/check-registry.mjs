@@ -43,6 +43,7 @@ const ALLOWLIST = {
   aps: 'Found outside the `anchor` tag the census crawls: SEP-24 runs at ramp.aps.money/gollum/api/v1/sep0024, a service path the survey does not reach, so the domain is absent from the transfer-capable snapshot.',
   bitnovo:
     'Live SEP-24 runs at stellar.bitnovo.com, which the committed survey snapshot does not classify as transfer-capable; re-survey to confirm and remove this entry once the snapshot covers it.',
+  perahub: 'SEP-31-only; never transfer-capable by design',
 };
 
 /** Extract the `[...]` literal assigned to `export const ANCHORS`. */
