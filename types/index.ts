@@ -112,6 +112,11 @@ export interface AnchorRate {
    * Present when the leaderboard API is reachable; absent otherwise.
    */
   reputationRank?: number;
+  /**
+   * The anchor's payout currency on this corridor has not been confirmed on a
+   * live /info; see Anchor.unverifiedCorridors.
+   */
+  unverifiedPayout?: boolean;
 }
 
 /**
@@ -700,6 +705,24 @@ export interface Sep6WithdrawNeedsInfo {
 /** Union of all three SEP-6 /withdraw response shapes. */
 export type Sep6WithdrawResponse =
   Sep6WithdrawInteractive | Sep6WithdrawNonInteractive | Sep6WithdrawNeedsInfo;
+
+// ─── SEP-31 ───────────────────────────────────────────────────────────────────
+
+/** A single asset entry in SEP-31 GET /info `receive`. Record-only: no send/quote fields. */
+export interface Sep31ReceiveAsset {
+  enabled?: boolean;
+  quotes_supported?: boolean;
+  quotes_required?: boolean;
+  min_amount?: number;
+  max_amount?: number;
+  fee_fixed?: number;
+  fee_percent?: number;
+}
+
+/** SEP-31 GET /info response, receive side only (no send, customer, or transaction endpoints). */
+export interface Sep31Info {
+  receive: Record<string, Sep31ReceiveAsset>;
+}
 
 // ─── SEP-12 ───────────────────────────────────────────────────────────────────
 
